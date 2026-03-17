@@ -1,45 +1,59 @@
-(() => {
-  const slider = document.querySelector(".hero-slider");
-  if (!slider) return;
+document.addEventListener('DOMContentLoaded', () => {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    const prevBtn = document.querySelector('.slider-prev');
+    const nextBtn = document.querySelector('.slider-next');
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+    let interval;
 
-  const slides = Array.from(slider.querySelectorAll(".slide"));
-  const dots = Array.from(slider.querySelectorAll(".slider-dot"));
-  const prev = slider.querySelector(".slider-prev");
-  const next = slider.querySelector(".slider-next");
+    function showSlide(index) {
+        slides.forEach(slide => slide.classList.remove('is-active'));
+        dots.forEach(dot => dot.classList.remove('is-active'));
 
-  if (!slides.length) return;
+        slides[index].classList.add('is-active');
+        dots[index].classList.add('is-active');
+    }
 
-  let index = 0;
-  let timer = null;
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        showSlide(currentIndex);
+    }
 
-  const render = () => {
-    slides.forEach((s, i) => s.classList.toggle("is-active", i === index));
-    dots.forEach((d, i) => d.classList.toggle("is-active", i === index));
-  };
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        showSlide(currentIndex);
+    }
 
-  const go = (i) => {
-    index = (i + slides.length) % slides.length;
-    render();
-  };
+    function startAutoPlay() {
+        interval = setInterval(nextSlide, 5000);
+    }
 
-  const autoStart = () => {
-    autoStop();
-    timer = setInterval(() => go(index + 1), 5000); // 5秒間隔に更新
-  };
+    function stopAutoPlay() {
+        clearInterval(interval);
+    }
 
-  const autoStop = () => {
-    if (timer) clearInterval(timer);
-    timer = null;
-  };
+    nextBtn.addEventListener('click', () => {
+        nextSlide();
+        stopAutoPlay();
+        startAutoPlay();
+    });
 
-  prev?.addEventListener("click", () => { go(index - 1); autoStart(); });
-  next?.addEventListener("click", () => { go(index + 1); autoStart(); });
-  dots.forEach((d, i) => d.addEventListener("click", () => { go(i); autoStart(); }));
+    prevBtn.addEventListener('click', () => {
+        prevSlide();
+        stopAutoPlay();
+        startAutoPlay();
+    });
 
-  // ホバー中は自動切替を停止
-  slider.addEventListener("mouseenter", autoStop);
-  slider.addEventListener("mouseleave", autoStart);
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentIndex = index;
+            showSlide(currentIndex);
+            stopAutoPlay();
+            startAutoPlay();
+        });
+    });
 
-  render();
-  autoStart();
-})();
+    // Start autoplay
+    startAutoPlay();
+});
